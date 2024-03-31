@@ -1,0 +1,73 @@
+from google.colab import drive
+drive.mount('/content/drive')
+
+import pandas as pd
+
+print(pd.__version__)
+
+numbers = {'value': [1, 2, 3, 4], 'word': ['one', 'two', 'three', 'four']}
+data = pd.DataFrame(numbers)
+print(data)
+
+df = pd.read_csv("/content/drive/MyDrive/titanic_train.csv")
+df.head()
+
+# Get the number of rows and columns
+print("Number of rows:", len(df))
+print("Number of columns:", len(df.columns))
+
+# Get the data types of each column
+print("Data types of each column:")
+print(df.dtypes)
+
+# Get summary statistics of each column
+print("Summary statistics of each column:")
+print(df.describe())
+
+# Get numpy array equivalent
+np_array = df.values
+print(np_array)
+
+# Get list equivalent
+list_equivalent = df.values.tolist()
+print(list_equivalent)
+
+# Remove missing values
+new_df = df.dropna()
+print(new_df)
+
+# Replace missing values with a specific value
+new_df = df.fillna(df.mean())
+print(new_df)
+
+data = {'Name': ['Jeff', 'Esha', 'Jia'], 'Age': [30, 56, 8]}
+df = pd.DataFrame(data)
+print(df)
+
+# Display details of the Name column
+print(df['Name'])
+
+# Display details of the row with Jia in it
+print(df[df['Name'] == 'Jia'])
+
+# Display the Name of the person with minimum age
+print(df[df['Age'] == df['Age'].min()]['Name'])
+
+# Display the Name of the person with maximum age
+print(df[df['Age'] == df['Age'].max()]['Name'])
+
+data = {'Name': ['Jeff', 'Esha', 'Jia', 'Eiran'], 'Age': [30, 56, 8, 46]}
+df = pd.DataFrame(data)
+print(df)
+
+# Display details of the person whose name starts with 'E'
+print(df[df['Name'].str.startswith('E')])
+
+# Find the count of models which provide AirBags for the driver only
+print(len(df[df['AirBags'] == 'Driver Only']))
+
+# Find the count of models which provide AirBags for the driver only and whose engine size is greater than 3
+print(len(df[(df['AirBags'] == 'Driver Only') & (df['EngineSize'] > 3)]))
+
+# Find the count of models which provide AirBags for the driver only and whose engine size is greater than 3 and type is Large
+print(len(df[(df['AirBags'] == 'Driver Only') & (df['EngineSize'] > 3) & (df['Type'] == 'Large')]))

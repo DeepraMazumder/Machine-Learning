@@ -1,0 +1,166 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# STEP 1
+
+df = pd.read_csv('http://192.168.12.90/exam/mllab_aiml/Day3/hour.csv')
+print(df.head())
+
+plt.figure(figsize=(12,6))
+sns.countplot(x='hr', data=df)
+plt.title('Hourly Bike Sharing Counts')
+plt.xlabel('Hour of the Day')
+plt.ylabel('Count')
+plt.show()
+
+plt.figure(figsize=(12,6))
+
+sns.distplot(df['cnt'],kde=True, label='Total Count', color='blue')
+sns.distplot(df['casual'],kde=True, label='Casual Count', color='orange')
+sns.distplot(df['registered'],kde=True, label='Registered Count', color='green')
+
+plt.title('Distribution of Count, Casual and Registered')
+plt.xlabel('Number of Rentals')
+plt.ylabel("Frequency")
+plt.legend()
+plt.show()
+
+plt.figure(figsize=(12,6))
+sns.countplot(x='weekday', data=df, hue='holiday')
+plt.title('Weekday-wise Bike Sharing Counts with Holiday Indicator')
+plt.xlabel('Weekday')
+plt.ylabel('Count')
+plt.legend(title='Holiday', loc='upper right', labels=['Not Holiday', 'Holiday'])
+plt.show()
+
+plt.figure(figsize=(12,6))
+sns.countplot(x='weekday', data=df, hue='workingday')
+plt.title('Weekday-wise Bike Sharing Counts with Working Day Indicator')
+plt.xlabel('Weekday')
+plt.ylabel('Count')
+plt.legend(title='Working Day', loc='upper right', labels=['Not Working Day', 'Working Day'])
+plt.show()
+
+plt.figure(figsize=(12,6))
+sns.barplot(x='mnth', y='cnt', data=df)
+plt.title('Month-wise Bike Sharing Counts for 2011 and 2012')
+plt.xlabel('Month')
+plt.ylabel('Count')
+plt.show()
+
+correlation_matrix = df.corr()
+plt.figure(figsize=(15,15))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', linewidth=.5)
+plt.title('Correlation Matrix')
+plt.show()
+
+# STEP 2
+
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler, PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+
+categorical_columns = ['season','hr','yr','mnth','holiday','weekday','workingday','weathersit']
+continuous_columns = ['temp','atemp','hum','windspeed']
+
+scaler = MinMaxScaler()
+encoder = OneHotEncoder(sparse=False)
+
+x_scaled = scaler.fit_transform(df[continuous_columns])
+x_encoded = encoder.fit_transform(df[categorical_columns])
+
+x_combined = pd.concat([pd.DataFrame(x_scaled),pd.DataFrame(x_encoded)],axis=1)
+y_train = df['cnt']
+
+X_train, X_test, y_train, y_test = train_test_split(x_combined, y_train, test_size = 0.2, random_state = 42) 
+
+# STEP 3:
+
+from scipy.linalg import lstsq
+
+X_linear = df[['temp','atemp','hum','windspeed']].values
+y_linear = df['cnt'].values
+
+X_linear = np.column_stack((np.ones(len(X_linear)),X_linear))
+
+theta, residuals, rank, s = lstsq(X_linear,y_linear)
+
+print('Coefficients (Theta):',theta)
+
+# STEP 4:
+
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+linear_model = LinearRegression()
+
+linear_model.fit(X_train,y_train)
+y_pred = linear_model.predict(X_test)
+
+mse = mean_squared_error(y_test,y_pred)
+print('Mean Squared Error: ',mse)
+
+r2 = r2_score(y_test,y_pred)
+print('R2 Score: ',r2)
+
+# POLYNOMIAL REGRESSION FOR TRAINING DATA & TESTING DATA
+
+poly_features = PolynomialFeatures(degree=2,include_bias=False)
+y = df['cnt']
+
+x_transformed_poly = poly_features.fit_transform(x_combined)
+
+X_train_poly, X_test_poly, y_train_poly, y_test_poly = train_test_split(x_transformed_poly, y, test_size = 0.2, random_state = 42)
+
+poly_model = LinearRegression()
+poly_model.fit(X_train_poly,y_train_poly)
+
+y_train_pred_poly = poly_model.predict(X_train_poly)
+y_test_pred_poly = poly_model.predict(X_test_poly)
+
+mse_poly = mean_squared_error(y_test_poly,y_test_pred_poly)
+r2_train_poly = r2_score(y_train_poly,y_train_pred_poly)
+print('R2 SCORE FOR TRAINING DATA: ',r2_train_poly)
+
+r2_test_poly = r2_score(y_test_poly,y_test_pred_poly)
+print('R2 SCORE FOR TESTING DATA: ',r2_test_poly)
+
+from sklearn.linear_model import Ridge, Lasso, ElasticNet
+rdg = Ridge(alpha = 0.4)
+lso = Lasso(alpha = 0.4)
+eln = ElasticNet(alpha = 0.1, l1_ratio = 0.5)
+
+# RIDGE REGULARIZATION
+
+rdg.fit(X_train_poly,y_train_poly)
+y_pred = rdg.predict(X_test_poly)
+
+mse = mean_squared_error(y_test_poly,y_pred)
+print('MSE: ',mse)
+
+r2 = r2_score(y_test_poly,y_pred)
+print('R2 SCORE: ',r2)
+
+# LASSO REGULARIZATION
+
+lso.fit(X_train_poly,y_train_poly)
+y_pred = lso.predict(X_test_poly)
+
+mse = mean_squared_error(y_test_poly,y_pred)
+print('MSE: ',mse)
+
+r2 = r2_score(y_test_poly,y_pred)
+print('R2 SCORE: ',r2)
+
+# ELASTIC REGULARIZATION
+
+eln.fit(X_train_poly,y_train_poly)
+y_pred = eln.predict(X_test_poly)
+
+mse = mean_squared_error(y_test_poly,y_pred)
+print('MSE: ',mse)
+
+r2 = r2_score(y_test_poly,y_pred)
+print('R2 SCORE: ',r2)

@@ -1,0 +1,158 @@
+import os
+import numpy as np
+import pandas as pd
+from PIL import Image
+import matplotlib.pyplot as plt
+import cv2
+
+data_dir = "D:/04_jyotiraditya/FullIJCNN2013"
+image_dir=os.path.join(data_dir)
+gt_file = os.path.join(data_dir, 'gt.txt')
+
+ground_truth = []
+
+with open(gt_file, "r") as file:
+
+    for line in file:
+
+        data= line.strip().split(";")
+
+        filename= data[0]
+
+        leftCol= int(data[1])
+
+        topRow= int(data[2])
+
+        rightCol= int(data[3])
+
+        bottomRow = int(data[4])
+
+        classID= int(data[5])
+
+        ground_truth.append((filename, (leftCol, topRow, rightCol, bottomRow), classID))
+
+features=[]
+labels=[]
+for filename,dim,cid in ground_truth:
+    image_path=os.path.join(image_dir,filename)
+    image=cv2.imread(image_path)
+    h,w=image.shape[:2]
+    y1,y2,x1,x2=max(0,dim[1]),min(h,dim[3]),max(0,dim[0]),min(w,dim[2])
+    cr=image[y1:y2,x1:x2]
+    features.append(cr)
+    labels.append(cid)
+
+#     for gt_filename,_,classID in ground_truth:
+#         if gt_filename==filename:
+#             labels.append(classID)
+#             break
+
+resized_images=[cv2.resize(image,(30,30)) for image in features]
+features=np.array([image.flatten() for image in resized_images])
+
+import math
+nc=len(np.unique(labels))
+ns=10
+nr=math.ceil(nc/ns)
+fig, axes = plt.subplots(nr, ns, figsize=(10, 1*nr))
+for idx,class_label in enumerate(np.unique(labels)):
+    si=resized_images[labels.index(class_label)]
+    ax=axes[idx//ns,idx%ns]
+    ax.imshow(si)
+    ax.set_title(f"class{class_label}")
+for ax in axes.flatten():
+    if not ax.images:
+            ax.axis("off")
+plt.tight_layout()
+plt.show()
+
+def plot_class_distribution(labels):
+    label_mapping = {
+        0: "speed limit 20",
+        1: "speed limit 30",
+        2: "speed limit 50",
+        3: "speed limit 60",
+        4: "speed limit 70",
+        5: "speed limit 80",
+        6: "restriction ends 80",
+        7: "speed limit 100",
+        8: "speed limit 120",
+        9: "no overtaking",
+        10: "no overtaking (trucks)",
+        11: "priority at next intersection",
+        12: "priority road",
+        13: "give way",
+        14: "stop",
+        15: "no traffic both ways",
+        16: "no trucks",
+        17: "no entry",
+        18: "danger",
+        19: "bend left",
+        20: "bend right",
+        21: "bend",
+        22: "uneven road",
+        23: "slippery road",
+        24: "road narrows",
+        25: "construction",
+        26: "traffic signal",
+        27: "pedestrian crossing",
+        28: "school crossing",
+        29: "cycles crossing",
+        30: "snow",
+        31: "animals",
+        32: "restriction ends",
+        33: "go right",
+        34: "go left",
+        35: "go straight",
+        36: "go right or straight",
+        37: "go left or straight",
+        38: "keep right",
+        39: "keep left",
+        40: "roundabout",
+        41: "restriction ends (overtaking)",
+        42: "restriction ends (overtaking (trucks))"
+    }
+
+    label_names = [label_mapping[label] for label in labels]
+    plt.figure(figsize=(16,12))
+
+    class_counts = pd.Series(label_names).value_counts()
+    plt.bar(class_counts.index, class_counts.values)
+    plt.xlabel('Class')
+    plt.ylabel('Frequency')
+    plt.title('Distribution of Classes')
+    plt.xticks(rotation=90)
+    plt.show()
+
+plot_class_distribution(labels)
+
+features=features/255.0
+
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test=train_test_split(features,labels,test_size=0.2)
+
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score,classification_report
+
+mlp=MLPClassifier(max_iter=100)
+
+mlp.fit(x_train,y_train)
+
+y_pred=mlp.predict(x_test)
+
+print("Accuracy Score=",accuracy_score(y_test,y_pred))
+
+print("Classification report:")
+
+print(classification_report(y_test,y_pred))
+
+from sklearn.model_selection import GridSearchCV
+
+parameter_space = {'hidden_layer_sizes': [(100, 50), (50,100),  (100,100), (200,100), (200,200)],
+                   'activation': ['tanh', 'relu', 'logistic'],
+                    'solver': ['sgd', 'adam', 'lbfgs'],
+                    'alpha': [0.0001, 0.9], 'learning_rate': ['constant', 'adaptive'],}
+
+gs=GridSearchCV(mlp,parameter_space,n_jobs=-1,cv=3)
+
+gs.fit(x_train,y_train)

@@ -1,0 +1,128 @@
+Exercise 1: Import the numpy package under the name np
+
+import numpy as np
+
+Exercise 2: Create a one-dimensional array
+
+a = [1, 2, 3]
+np.array(a)
+
+Exercise 3: Create a two-dimensional array
+
+np.array([[1, 2], [3, 4]])
+
+Exercise 4: Create an array of 10 fives
+
+np.full(10, 5)
+
+Exercise 5: Create an array of 30 zeros
+
+np.full(30, 0)
+
+Exercise 6: Create an array of odd integers from 20 to 40
+
+np.arange(21, 40, 2)
+
+Exercise 7: Create a 5 * 5 identity matrix
+
+np.eye(5,5)
+
+Exercise 8: Generate an array of 20 random numbers sampled from a standard normal distribution
+
+np.random.standard_normal(20)
+
+Exercise 9: Create a numpy array from a List
+
+l = [1, 2, 3]
+np.array(l)
+
+Exercise 10: Create a 4 * 4 * 4 array with random values
+
+np.random.rand(4,4,4)
+
+Exercise 11: Create a 10 * 10 array with random values and find the minimum and maximum values
+
+b = np.random.rand(10,10)
+b.max(), np.max(b), b.min()
+
+Exercise 12: Create a checkerboard 8 * 8 matrix using the tile function
+
+np.tile([[1, 0],[0,1]], (8,8))
+
+Exercise 13: Given two arrays A and B, perform the below operations: 
+A + B
+A - B
+A * B
+A / B
+A ** 3
+A = np.arange(1,6)
+B = np.arange(6, 15, 2)
+
+Exercise 14: Given an array X. Calculate sine, cosine, and tangent of X, element-wise. X = np.array([1, 45, 60, 90])
+
+X = np.array([1, 45, 60, 90])
+print(np.sin(X[0]))
+print(np.cos(X))
+print(np.tan(X))
+X[0]
+
+Exercise 15: Given an array X. Convert angles from degrees to radians.
+
+X = np.array([1, 45, 60, 90])
+np.deg2rad(X)
+
+Exercise 16: Given an array X. Calculate the round, ceil, floor of X, element- wise
+X = np.array([4.1, 2.5, 44.5, 25.9, -1.1, -9.5, -6.9])
+X = np.array([4.1, 2.5, 44.5, 25.9, -1.1, -9.5, -6.9])
+
+np.round(X), np.ceil(X), np.floor(X)
+
+Exercise 17: Given two arrays X and Y. Divide X by Y element-wise using divide, true_divide, floor_divide functions. X = np.array([1, 2, 3])
+Y = np.array([4, 5, 6])
+X = np.array([1, 2, 3])
+Y = np.array([4, 5, 6])
+
+np.divide(X, Y)
+np.true_divide(X, Y)
+np.floor_divide(X, Y)
+
+Exercise 18: Given two arrays X and Y. Compute X^Y, element-wise. 
+X = np.array([1, 2, 3])
+Y = np.array([4, 5, 6])
+
+np.power(X , Y)
+
+Exercise 19: Given an array X. If an element of X is smaller than 5, replace it with 4. And if an element of X is bigger than 9, replace it with 8. 
+
+X = np.array([8, 4, 22, 3, 66, 12, 1, 5])
+X = np.array([8, 4, 6, 3, 66, 12, 1, 5])
+np.clip(X, 4, 8)
+
+Exercise 20: Use the functions len(), numpy.shape() on array X. How do they relate to each other? And to the ndim attribute of the arrays?
+X = np.array([8, 4, 22, 3, 66, 12, 1, 5])
+X = np.array([8, 4, 22, 3, 66, 12, 1, 5])
+
+len(X), X.ndim, X.shape
+
+Exercise 21: Create a 2-D array called X, ranging from -1 to 14 using arange() with step size 0.25. Split this array row wise into 3 equal parts and print the result. 
+
+X = np.arange(-1, 14, 0.25)
+X1 = X.reshape(3, 20)
+X1
+
+Exercise 22: Use the array X created above and write the commands for the following: 
+Find the sum of all elements
+Find the sum of all elements row wise
+Find the sum of all elements column wise
+Find the max of all elements
+Find the min of all elements in each row
+Find the mean of all elements in each row
+Find the standard deviation column wise
+
+print("sum is",np.sum(X1))
+print("\nsum of all elements row wise\n",np.sum(X1,axis=0))
+print("\nsum of all elements col wise\n",np.sum(X1,axis=1))
+print("\nmax and min",X1.max(), X1.min())
+print("\n min row wise",np.min(X1, axis=0))
+print("\n mean row wise",np.mean(X1, axis=0))
+print("\n standard deviation column wise",np.std(X1,axis=1))

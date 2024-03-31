@@ -1,0 +1,173 @@
+import os
+import numpy as np
+import pandas as pd
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from PIL import Image
+
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.neural_network import MLPClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+data_dir = "D:\DEEPRA_096\FullIJCNN2013\FullIJCNN2013"
+
+ground_truth = pd.read_csv("D:\DEEPRA_096\FullIJCNN2013\FullIJCNN2013\gt.csv",header=None)
+ground_truth.head()
+
+image = Image.open('D:/DEEPRA_096/FullIJCNN2013/FullIJCNN2013/00000.ppm')
+
+plt.imshow(image)
+plt.axis('off')
+plt.show()
+
+im_crop = image.crop((774,411,815,446))
+im_crop
+
+i = im_crop.resize((100, 100))
+i
+
+# Define paths
+gt_file = r"D:\DEEPRA_096\FullIJCNN2013\FullIJCNN2013\gt.csv"
+output_dir = r"D:\DEEPRA_096\FullIJCNN2013\FullIJCNN2013\cropped_images"
+
+# Load ground truth data
+ground_truth = pd.read_csv(gt_file, header=None)
+
+# Create output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
+
+# Iterate over each row in the ground truth file
+for index, row in ground_truth.iterrows():
+    # Extract image filename and ROI coordinates
+    image_filename = row[0]
+    left_col, top_row, right_col, bottom_row = row[1:5]
+    
+    # Construct full path to the image
+    image_path = os.path.join(data_dir, image_filename)
+    
+    # Open the image
+    image = Image.open(image_path)
+    
+    # Crop the image based on ROI coordinates
+    cropped_image = image.crop((left_col, top_row, right_col, bottom_row))
+    
+    # Save the cropped image
+    output_path = os.path.join(output_dir, image_filename)
+    cropped_image.save(output_path)
+
+print("Images cropped and saved successfully.")
+
+# Define paths
+data_dir = r"D:\DEEPRA_096\FullIJCNN2013\FullIJCNN2013"
+gt_file = r"D:\DEEPRA_096\FullIJCNN2013\FullIJCNN2013\gt.csv"
+output_dir = r"D:\DEEPRA_096\cropped_images"
+
+# Create the output directory if it doesn't exist
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+# Read the ground truth file
+ground_truth = pd.read_csv(gt_file, header=None)
+
+# Iterate over the first 10 rows (images) in the ground truth file
+for idx, row in ground_truth.iterrows():
+    # Extract the image file name and ROI coordinates
+    image_file = os.path.join(data_dir, row[0])
+    left, top, right, bottom = int(row[1]), int(row[2]), int(row[3]), int(row[4])
+    
+    # Open the image
+    image = Image.open(image_file)
+    
+    # Crop the image
+    cropped_image = image.crop((left, top, right, bottom))
+    
+    # Save the cropped image
+    output_file = os.path.join(output_dir, f"cropped_{idx}.png")
+    cropped_image.save(output_file)
+    
+    # Print the cropped image
+    print(f"Saved cropped image {idx}: {output_file}")
+
+# Define paths
+output_dir_resized = r"D:\DEEPRA_096\FullIJCNN2013\FullIJCNN2013\resized_images"
+
+# Create output directory if it doesn't exist
+os.makedirs(output_dir_resized, exist_ok=True)
+
+# Initialize empty lists for features and labels
+features = []
+labels = []
+
+# Resize images and convert to numpy arrays
+for idx, row in ground_truth.iterrows():
+    image_filename = row[0]
+    left_col, top_row, right_col, bottom_row = row[1:5]
+
+    image_path = os.path.join(data_dir, image_filename)
+    image = Image.open(image_path)
+
+    # Crop and resize image
+    cropped_image = image.crop((left_col, top_row, right_col, bottom_row))
+    resized_image = cropped_image.resize((30, 30))
+
+    # Convert resized image to numpy array
+    image_array = np.array(resized_image)
+    features.append(image_array.flatten())  # Flatten the 2D array to 1D
+    labels.append(row[5])  # Class ID
+
+    # Save resized image (optional)
+    resized_image.save(os.path.join(output_dir_resized, image_filename))
+
+# Convert features and labels to numpy arrays
+X = np.array(features)
+y = np.array(labels)
+
+print("Resized images to (30, 30) and converted to numpy arrays.")
+print("X shape:", X.shape)
+print("y shape:", y.shape)
+
+import math
+
+# Calculate the number of rows and columns for the grid
+num_classes = len(classes)
+rows = int(math.ceil(num_classes / 7))
+cols = min(num_classes, 7)
+
+# Plot the sample images in a grid
+fig, axs = plt.subplots(rows, cols, figsize=(15, 15))
+
+for i, class_id in enumerate(classes):
+    row = i // 7
+    col = i % 7
+    class_images = X[y == class_id]
+    sample_image = class_images[0].reshape(30, 30, 3)  # Reshape back to 30x30x3 for RGB image
+    axs[row, col].imshow(sample_image)
+    axs[row, col].set_title(f"\nClass {class_id}\nTotal Classes: {len(classes)}\n")
+    axs[row, col].axis('off')
+
+# Remove empty subplots
+for i in range(num_classes, rows * cols):
+    fig.delaxes(axs.flatten()[i])
+
+plt.tight_layout()
+plt.show()
+
+# Plot the distribution of classes
+
+plt.figure(figsize=(12, 6))
+plt.hist(y, bins=len(classes), Edgecolor='black')
+plt.xticks(classes)
+plt.xlabel('Class ID')
+plt.ylabel('Frequency')
+plt.title('Distribution of Classes')
+plt.grid(axis='y', alpha=0.75)
+plt.show()
+
+plt.figure(figsize=(12, 6))
+sns.kdeplot(y)
+plt.xlabel('Class ID')
+plt.ylabel('Frequency')
+plt.title('Distribution of Classes')
+plt.grid(axis='y', alpha=0.75)
+plt.show()
